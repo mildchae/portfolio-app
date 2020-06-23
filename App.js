@@ -1,103 +1,91 @@
-import React from 'react';
-import {
-  SafeAreaView,
-  TouchableOpacity,
-  FlatList,
-  StyleSheet,
-  Text,
-} from 'react-native';
-import Constants from 'expo-constants';
+import React, { useRef, useState, useEffect } from 'react';
+import { Text, View, StyleSheet, Animated, Platform, ScrollView } from 'react-native';
+
+import Constants from "expo-constants";
 
 
-const handleRefresh = () => {
-  console.log("리프레시");
-  this.setState({
-    refreshing: true,
-    isLoad: false,
-    data : [],
-    page: 1,
-  }, () => {this.getUsedItemList()});
-}
-
-
-const DATA = [
-  {
-    id: 'bd7acbea-c1b1-46c2-aed5-3ad53abb28ba',
-    title: 'First Item',
-  },
-  {
-    id: '3ac68afc-c605-48d3-a4f8-fbd91aa97f63',
-    title: 'Second Item',
-  },
-  {
-    id: '58694a0f-3da1-471f-bd96-145571e29d72',
-    title: 'Third Item',
-  },
-];
-
-function Item({ id, title, selected, onSelect }) {
-  return (
-    <TouchableOpacity
-      onPress={() => onSelect(id)}
-      style={[
-        styles.item,
-        { backgroundColor: selected ? '#6e3b6e' : '#f9c2ff' },
-      ]}
-    >
-      <Text style={styles.title}>{title}</Text>
-    </TouchableOpacity>
-  );
-}
-
+const HEADER_MIN_HEIGHT = 80
+const HEADER_MAX_HEIGHT = 200
 
 function App() {
-  const [selected, setSelected] = React.useState(new Map());
+  const scrollYAnimatedValue  =  useRef(new Animated.Value(0)).current
+  const [data, setData] = useState([])
 
-  const onSelect = React.useCallback(
-    id => {
-      const newSelected = new Map(selected);
-      newSelected.set(id, !selected.get(id));
+  useEffect(() => {
+    setData([...Array(50).keys()])
+  }, [])
 
-      setSelected(newSelected);
-    },
-    [selected],
-  );
-
-
+  const headerHeight = scrollYAnimatedValue.interpolate(
+    {
+      inputRange: [0, (HEADER_MAX_HEIGHT - HEADER_MIN_HEIGHT)],
+      outputRange: [HEADER_MAX_HEIGHT, HEADER_MIN_HEIGHT],
+      extrapolate: 'clamp'
+    }
+  )
+  const borderRadius = scrollYAnimatedValue.interpolate(
+    {
+      inputRange: [0, (HEADER_MAX_HEIGHT - HEADER_MIN_HEIGHT)],
+      outputRange: [25, 5],
+      extrapolate: 'clamp'
+    }
+  )
+  useEffect( () => {
+    console.log(headerHeight)
+  })
   return (
-    <SafeAreaView style={styles.container}>
-      <FlatList
-        data={DATA}
-        renderItem={({ item }) => (
-          <Item
-            id={item.id}
-            title={item.title}
-            selected={!!selected.get(item.id)}
-            onSelect={onSelect}
-          />
+    <View style={styles.container}>
+
+      <ScrollView
+        contentContainerStyle={{ paddingTop: HEADER_MAX_HEIGHT }}
+        scrollEventThrottle={16}
+        onScroll={Animated.event(
+          [{ nativeEvent: { contentOffset: { y: scrollYAnimatedValue } } }]
         )}
-        keyExtractor={item => item.id}
-        extraData={selected}
-      />
-    </SafeAreaView>
+      >
+        {
+          data.map((item, key) => (
+            <View key={key}>
+              <Text style={styles.itemText}>Row No : {item}</Text>
+            </View>
+          ))
+        }
+      </ScrollView>
+      <Animated.View 
+        style={[styles.animatedHeaderContainer, 
+          {
+            height:headerHeight, 
+            borderBottomLeftRadius: borderRadius, 
+            borderBottomRightRadius: borderRadius}]}
+      >
+        <Text>
+          12312
+        </Text>
+      </Animated.View>
+    </View>
+
   )
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    marginTop: Constants.statusBarHeight,
-  },
-  item: {
-    backgroundColor: '#f9c2ff',
-    padding: 20,
-    marginVertical: 8,
-    marginHorizontal: 16,
-  },
-  title: {
-    fontSize: 32,
-  },
-});
+const styles = StyleSheet.create(
+  {
+    container: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    animatedHeaderContainer: {
+      position: 'absolute',
+      top: (Platform.OS == 'ios') ? 20 : 0,
+      left: 0,
+      right: 0,
+      justifyContent: 'center',
+      alignItems: 'center',
+      paddingTop: Constants.statusBarHeight,
+      backgroundColor: 'rgb(133,162,228)',
+      
+    },
+  }
+)
 
 
 export default App;
