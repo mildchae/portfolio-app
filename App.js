@@ -18,7 +18,7 @@ function App() {
   const headerHeight = scrollYAnimatedValue.interpolate(
     {
       inputRange: [0, (HEADER_MAX_HEIGHT - HEADER_MIN_HEIGHT)],
-      outputRange: [HEADER_MAX_HEIGHT, HEADER_MIN_HEIGHT],
+      outputRange: [HEADER_MAX_HEIGHT, Constants.statusBarHeight],
       extrapolate: 'clamp'
     }
   )
@@ -26,6 +26,13 @@ function App() {
     {
       inputRange: [0, (HEADER_MAX_HEIGHT - HEADER_MIN_HEIGHT)],
       outputRange: [25, 5],
+      extrapolate: 'clamp'
+    }
+  )
+  const headerBackground = scrollYAnimatedValue.interpolate(
+    {
+      inputRange: [0, (HEADER_MAX_HEIGHT - HEADER_MIN_HEIGHT)],
+      outputRange: ['rgb(133,162,228)', 'rgb(255,255,255)'],
       extrapolate: 'clamp'
     }
   )
@@ -38,27 +45,32 @@ function App() {
       <ScrollView
         contentContainerStyle={{ paddingTop: HEADER_MAX_HEIGHT }}
         scrollEventThrottle={16}
+        showsVerticalScrollIndicator = {false}
         onScroll={Animated.event(
           [{ nativeEvent: { contentOffset: { y: scrollYAnimatedValue } } }]
         )}
       >
-        {
-          data.map((item, key) => (
-            <View key={key}>
-              <Text style={styles.itemText}>Row No : {item}</Text>
-            </View>
-          ))
-        }
+          {
+            data.map((item, key) =>
+              (
+                <View key={key} style={styles.item}>
+                  <Text style={styles.itemText}>Row No : {item}</Text>
+                </View>
+              ))
+          }
       </ScrollView>
+
+
       <Animated.View 
         style={[styles.animatedHeaderContainer, 
           {
             height:headerHeight, 
             borderBottomLeftRadius: borderRadius, 
-            borderBottomRightRadius: borderRadius}]}
+            borderBottomRightRadius: borderRadius,
+          }]}
       >
         <Text>
-          12312
+          
         </Text>
       </Animated.View>
     </View>
@@ -71,7 +83,7 @@ const styles = StyleSheet.create(
     container: {
       flex: 1,
       justifyContent: 'center',
-      alignItems: 'center',
+      alignItems: 'center'
     },
     animatedHeaderContainer: {
       position: 'absolute',
@@ -84,6 +96,18 @@ const styles = StyleSheet.create(
       backgroundColor: 'rgb(133,162,228)',
       
     },
+    item: {
+      backgroundColor: '#ff9e80',
+      margin: 8,
+      height: 155,
+      width: 300,
+      justifyContent: 'center',
+      alignItems: 'center'
+    },
+    itemText: {
+      color: 'black',
+      fontSize: 16
+    }
   }
 )
 
